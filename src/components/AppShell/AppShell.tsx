@@ -1,4 +1,4 @@
-import { CreditCard, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
+import { CreditCard, LayoutDashboard, ListChecks, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import Brand from '@/components/Brand/Brand'
@@ -8,6 +8,10 @@ import { logout } from '@/store/authSlice'
 const links = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/plans', label: 'Plans', icon: CreditCard },
+]
+
+const adminLinks = [
+  { to: '/admin/payment-logs', label: 'Payment logs', icon: ListChecks },
 ]
 
 const AppShell = () => {
@@ -30,7 +34,8 @@ const AppShell = () => {
     />
   ) : null;
 
-  const navLinks = links.map(({ to, label, icon: Icon }) => (
+  const visibleLinks = user?.role === 'ADMIN' ? [...links, ...adminLinks] : links
+  const navLinks = visibleLinks.map(({ to, label, icon: Icon }) => (
     <NavLink
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${

@@ -2,6 +2,7 @@ import { ApiError, apiRequest } from '@/services/apiClient';
 import type {
   AuthSession,
   PaginatedResponse,
+  PaymentLog,
   Plan,
   Subscription,
   SubscriptionMutation,
@@ -31,6 +32,21 @@ export const subscriptionRepository = {
 
   getPlans(token: string): Promise<PaginatedResponse<Plan>> {
     return apiRequest('/plans?page=1&limit=20', { token })
+  },
+
+  getPaymentLogs(
+    token: string,
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<PaymentLog>> {
+    return apiRequest(`/payments?page=${page}&limit=${limit}`, { token })
+  },
+
+  getAdminSubscriptions(
+    token: string,
+    limit = 100,
+  ): Promise<PaginatedResponse<Subscription>> {
+    return apiRequest(`/subscriptions?page=1&limit=${limit}`, { token })
   },
 
   async getSubscriptions(token: string, role: User['role']): Promise<Subscription[]> {

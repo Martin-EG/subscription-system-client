@@ -68,6 +68,40 @@ describe('subscriptionRepository', () => {
     )
   })
 
+  it('loads a page of payment logs with the access token', async () => {
+    jest.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ data: [], page: 2, limit: 20, total: 21 }),
+    } as Response)
+
+    await subscriptionRepository.getPaymentLogs('jwt', 2, 20)
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/payments?page=2&limit=20'),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer jwt' }),
+      }),
+    )
+  })
+
+  it('loads subscriptions for admin payment lookups', async () => {
+    jest.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ data: [], page: 1, limit: 100, total: 0 }),
+    } as Response)
+
+    await subscriptionRepository.getAdminSubscriptions('jwt')
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/subscriptions?page=1&limit=100'),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer jwt' }),
+      }),
+    )
+  })
+
   it('normalizes a user subscription response and treats 404 as empty state', async () => {
     const subscription = {
       subscriptionId: 's1',
