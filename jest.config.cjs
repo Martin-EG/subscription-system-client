@@ -22,9 +22,13 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: [
-    'src/lib/**/*.ts',
-    'src/services/**/*.ts',
-    'src/store/*Slice.ts',
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.test.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/main.tsx',
+    '!src/**/index.ts',
+    '!src/types/**',
+    '!src/test/**',
   ],
   coverageThreshold: {
     global: {
