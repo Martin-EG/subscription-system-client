@@ -1,4 +1,4 @@
-import { LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
+import { CreditCard, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import Brand from '@/components/Brand/Brand'
@@ -7,6 +7,7 @@ import { logout } from '@/store/authSlice'
 
 const links = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
+  { to: '/plans', label: 'Plans', icon: CreditCard },
 ]
 
 const AppShell = () => {

@@ -8,6 +8,7 @@ import { notify } from '@/store/notificationSlice'
 const DashboardPage = lazy(() => import('@/pages/DashboardPage/DashboardPage'))
 const LoginPage = lazy(() => import('@/pages/LoginPage/LoginPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage/NotFoundPage'))
+const PlansPage = lazy(() => import('@/pages/PlansPage/PlansPage'))
 
 const LoadingScreen = () => {
   return (
@@ -41,6 +42,7 @@ const App = () => {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
               <Route element={<DashboardPage />} index />
+              <Route element={<PlansPage />} path="plans" />
             </Route>
           </Route>
           <Route element={<NotFoundPage />} path="*" />
