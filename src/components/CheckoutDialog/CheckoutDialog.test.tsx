@@ -72,6 +72,10 @@ describe('CheckoutDialog', () => {
     expect(screen.getByRole('dialog', { name: 'Complete your purchase' })).toBeInTheDocument();
     expect(screen.getByText('$25.00')).toBeInTheDocument();
     expect(screen.getByText('Billed monthly to user@example.com')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Test User');
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveAttribute('readonly');
+    expect(screen.getByRole('textbox', { name: 'Email address' })).toHaveValue('user@example.com');
+    expect(screen.getByRole('textbox', { name: 'Email address' })).toHaveAttribute('readonly');
 
     const declinedCard = screen.getByRole('radio', { name: /Test declined card/i });
     await user.click(declinedCard);

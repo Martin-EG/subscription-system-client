@@ -90,6 +90,17 @@ The portal integrates with:
 
 Protected calls send `Authorization: Bearer <jwt>`. Checkout also sends a unique `Idempotency-Key`, which makes automatic retry safe and protects against duplicate clicks or transient network failures.
 
+### Checkout identity and payment data
+
+The checkout visibly covers the assessment's name, email, and payment requirement:
+
+- Name and email are automatically filled from the authenticated user returned at login.
+- Both identity fields are read-only confirmation data. They are not included in the checkout body because the API derives the purchaser from the signed JWT.
+- The selected simulated payment method is submitted with the plan identifier as `{ planId, paymentMethod }`.
+
+This avoids trusting client-supplied identity fields that could be modified to impersonate another
+user, while still making the account receiving the subscription clear before payment.
+
 ## Resilience and Edge Cases
 
 - Network and 5xx failures retry twice with exponential backoff.

@@ -52,6 +52,10 @@ test('user signs in and purchases a subscription', async ({ page }) => {
   await expect(page).toHaveURL(/\/plans$/)
   await expect(page.getByRole('heading', { name: 'Pick the access that fits.' })).toBeVisible()
   await page.getByRole('button', { name: 'Choose Pro' }).click()
+  await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue('Ada Lovelace')
+  await expect(page.getByRole('textbox', { name: 'Email address' })).toHaveValue('ada@example.com')
+  await expect(page.getByRole('textbox', { name: 'Name' })).toHaveAttribute('readonly', '')
+  await expect(page.getByRole('textbox', { name: 'Email address' })).toHaveAttribute('readonly', '')
   await page.getByRole('button', { name: 'Pay securely' }).click()
 
   await expect(page.getByText('You are all set.')).toBeVisible()

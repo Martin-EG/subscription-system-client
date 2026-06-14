@@ -1,6 +1,7 @@
 import { Check, CreditCard, LoaderCircle, LockKeyhole, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import Button from '@/components/Button';
+import FormField from '@/components/FormField';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { notify } from '@/store/notificationSlice';
 import { checkout, fetchSubscriptions, resetCheckout } from '@/store/subscriptionSlice';
@@ -95,6 +96,27 @@ const CheckoutDialog = ({ plan, onClose }: CheckoutDialogProps) => {
                 Billed {plan.billingPeriod?.toLowerCase() ?? 'once'} to {user?.email}
               </p>
             </div>
+
+            <fieldset className="grid gap-4 sm:grid-cols-2">
+              <legend className="mb-2 text-sm font-bold text-slate-700 sm:col-span-2">
+                Account details
+              </legend>
+              <FormField
+                autoComplete="name"
+                label="Name"
+                name="name"
+                readOnly
+                value={user?.name ?? ''}
+              />
+              <FormField
+                autoComplete="email"
+                label="Email address"
+                name="email"
+                readOnly
+                type="email"
+                value={user?.email ?? ''}
+              />
+            </fieldset>
 
             <fieldset className="grid gap-3">
               <legend className="mb-2 text-sm font-bold text-slate-700">Simulated payment method</legend>
