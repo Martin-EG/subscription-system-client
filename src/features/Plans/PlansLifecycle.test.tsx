@@ -35,6 +35,24 @@ const plan: Plan = {
   billingPeriod: 'MONTHLY',
 };
 
+const setSubscriptionState = (
+  plans: Plan[],
+  status: 'idle' | 'loading' | 'ready' | 'error',
+  error: string | null,
+) => {
+  mockedUseAppSelector.mockImplementation((selector) =>
+    selector({
+      subscriptions: {
+        plans,
+        subscriptions: [],
+        status,
+        checkoutStatus: 'idle',
+        error,
+      },
+    } as unknown as Parameters<typeof selector>[0]),
+  );
+};
+
 describe('PlansLifecycle', () => {
   const dispatch = jest.fn();
 
@@ -44,13 +62,7 @@ describe('PlansLifecycle', () => {
   });
 
   it('fetches plans and renders loading placeholders', () => {
-    mockedUseAppSelector.mockReturnValue({
-      plans: [],
-      subscriptions: [],
-      status: 'loading',
-      checkoutStatus: 'idle',
-      error: null,
-    });
+    setSubscriptionState([], 'loading', null);
 
     const { container } = render(<PlansLifecycle />);
 
@@ -59,13 +71,7 @@ describe('PlansLifecycle', () => {
   });
 
   it('renders the error state when loading plans fails', () => {
-    mockedUseAppSelector.mockReturnValue({
-      plans: [],
-      subscriptions: [],
-      status: 'error',
-      checkoutStatus: 'idle',
-      error: 'Plans unavailable.',
-    });
+    setSubscriptionState([], 'error', 'Plans unavailable.');
 
     render(<PlansLifecycle />);
 
@@ -73,13 +79,7 @@ describe('PlansLifecycle', () => {
   });
 
   it('renders the empty state when no plans are returned', () => {
-    mockedUseAppSelector.mockReturnValue({
-      plans: [],
-      subscriptions: [],
-      status: 'ready',
-      checkoutStatus: 'idle',
-      error: null,
-    });
+    setSubscriptionState([], 'ready', null);
 
     render(<PlansLifecycle />);
 
@@ -87,13 +87,7 @@ describe('PlansLifecycle', () => {
   });
 
   it('renders available plans without fetching them again', () => {
-    mockedUseAppSelector.mockReturnValue({
-      plans: [plan],
-      subscriptions: [],
-      status: 'ready',
-      checkoutStatus: 'idle',
-      error: null,
-    });
+    setSubscriptionState([plan], 'ready', null);
 
     render(<PlansLifecycle />);
 

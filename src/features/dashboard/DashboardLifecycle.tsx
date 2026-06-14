@@ -8,7 +8,9 @@ import DashboardContent from './DashboardContent';
 
 const DashboardLifecycle = () => {
   const dispatch = useAppDispatch()
-  const { subscriptions, status, error } = useAppSelector((state) => state.subscriptions)
+  const subscriptions = useAppSelector((state) => state.subscriptions.subscriptions)
+  const status = useAppSelector((state) => state.subscriptions.status)
+  const error = useAppSelector((state) => state.subscriptions.error)
   const currentSubscription = subscriptions[0]
 
   useEffect(() => {

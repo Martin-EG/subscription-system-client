@@ -15,7 +15,8 @@ const LoginCard = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { status, error } = useAppSelector((state) => state.auth);
+  const status = useAppSelector((state) => state.auth.status);
+  const error = useAppSelector((state) => state.auth.error);
   const [fields, setFields] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 

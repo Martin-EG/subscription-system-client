@@ -3,7 +3,7 @@ import { useAppSelector } from '@/store/hooks';
 import LoginCard from '@/features/Login';
 
 export default function LoginPage() {
-  const { session } = useAppSelector((state) => state.auth);
+  const session = useAppSelector((state) => state.auth.session);
 
   if (session) return <Navigate replace to="/" />;
 

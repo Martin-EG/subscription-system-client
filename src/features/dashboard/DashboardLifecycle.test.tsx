@@ -47,6 +47,24 @@ const subscription: Subscription = {
   cancelAtPeriodEnd: false,
 };
 
+const setSubscriptionState = (
+  subscriptions: Subscription[],
+  status: 'idle' | 'loading' | 'ready' | 'error',
+  error: string | null,
+) => {
+  mockedUseAppSelector.mockImplementation((selector) =>
+    selector({
+      subscriptions: {
+        subscriptions,
+        plans: [],
+        status,
+        checkoutStatus: 'idle',
+        error,
+      },
+    } as unknown as Parameters<typeof selector>[0]),
+  );
+};
+
 describe('DashboardLifecycle', () => {
   const dispatch = jest.fn();
 
@@ -57,13 +75,7 @@ describe('DashboardLifecycle', () => {
   });
 
   it('fetches subscriptions and renders a loading skeleton', () => {
-    mockedUseAppSelector.mockReturnValue({
-      subscriptions: [],
-      plans: [],
-      status: 'loading',
-      checkoutStatus: 'idle',
-      error: null,
-    });
+    setSubscriptionState([], 'loading', null);
 
     const { container } = render(<DashboardLifecycle />);
 
@@ -72,13 +84,7 @@ describe('DashboardLifecycle', () => {
   });
 
   it('renders the error state when loading fails', () => {
-    mockedUseAppSelector.mockReturnValue({
-      subscriptions: [],
-      plans: [],
-      status: 'error',
-      checkoutStatus: 'idle',
-      error: 'Unable to load subscriptions.',
-    });
+    setSubscriptionState([], 'error', 'Unable to load subscriptions.');
 
     render(<DashboardLifecycle />);
 
@@ -86,13 +92,7 @@ describe('DashboardLifecycle', () => {
   });
 
   it('renders the empty state when no subscription exists', () => {
-    mockedUseAppSelector.mockReturnValue({
-      subscriptions: [],
-      plans: [],
-      status: 'ready',
-      checkoutStatus: 'idle',
-      error: null,
-    });
+    setSubscriptionState([], 'ready', null);
 
     render(<DashboardLifecycle />);
 
@@ -100,13 +100,7 @@ describe('DashboardLifecycle', () => {
   });
 
   it('renders the first current subscription', () => {
-    mockedUseAppSelector.mockReturnValue({
-      subscriptions: [subscription],
-      plans: [],
-      status: 'ready',
-      checkoutStatus: 'idle',
-      error: null,
-    });
+    setSubscriptionState([subscription], 'ready', null);
 
     render(<DashboardLifecycle />);
 

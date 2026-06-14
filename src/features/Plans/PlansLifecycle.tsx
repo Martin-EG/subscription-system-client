@@ -7,7 +7,9 @@ import PlansContent from './PlansContent'
 
 const PlansLifecycle = () => {
   const dispatch = useAppDispatch()
-  const { plans, status, error } = useAppSelector((state) => state.subscriptions)
+  const plans = useAppSelector((state) => state.subscriptions.plans)
+  const status = useAppSelector((state) => state.subscriptions.status)
+  const error = useAppSelector((state) => state.subscriptions.error)
 
   useEffect(() => {
     if (!plans.length) void dispatch(fetchPlans())

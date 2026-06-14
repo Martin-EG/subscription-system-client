@@ -105,13 +105,19 @@ describe('PlansContent', () => {
 
   it('opens and closes checkout for the selected plan', async () => {
     const user = userEvent.setup();
+    const numberFormatSpy = jest.spyOn(Intl, 'NumberFormat');
     setSubscriptionState();
     render(<PlansContent />);
+    const initialFormatCount = numberFormatSpy.mock.calls.length;
 
     await user.click(screen.getByRole('button', { name: 'Choose Premium' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('Checkout Premium');
+    expect(numberFormatSpy).toHaveBeenCalledTimes(initialFormatCount);
 
     await user.click(screen.getByRole('button', { name: 'Close dialog' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(numberFormatSpy).toHaveBeenCalledTimes(initialFormatCount);
+
+    numberFormatSpy.mockRestore();
   });
 });
