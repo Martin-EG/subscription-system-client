@@ -1,45 +1,74 @@
 # Subscription Portal
 
-React and TypeScript frontend for the scalable subscription system assessment. Users can authenticate, view subscription status, compare plans, and complete a simulated, idempotent checkout.
+[Versión en español](./README.es.md)
+
+React and TypeScript frontend for the subscription system assessment. It supports authentication,
+subscription status, plan comparison, simulated checkout, and an administrative payment log.
+
+## Features
+
+- JWT authentication with tab-scoped session persistence
+- Protected dashboard and plans routes
+- Role-protected payment log for administrators
+- Simulated, idempotent subscription checkout
+- Authenticated user details prefilled during checkout
+- Accessible notifications and responsive navigation
+- Lazy-loaded route pages and render-focused component optimizations
 
 ## Stack
 
-- Vite 8, React 19, and TypeScript
-- React Router with lazy-loaded protected routes
-- Redux Toolkit for auth, subscription, checkout, and notification state
-- Tailwind CSS for layout and styled-components for reusable custom controls
-- Jest and Testing Library for unit coverage
-- Playwright for the complete subscription E2E flow
+- Vite 8, React 19, and TypeScript 6
+- React Router 7
+- Redux Toolkit and React Redux
+- Tailwind CSS 4 and styled-components
+- Zod for login validation
+- Jest and Testing Library
+- Playwright for the subscription E2E flow
+- GitHub Actions for unit tests, lint, and typecheck
 
 ## Requirements
 
 - Node.js 22 or newer
-- pnpm 11 (`corepack enable pnpm`)
+- pnpm 11.6.0
 - Subscription API running at `http://localhost:3000`
 
 ## Setup
 
 ```bash
+corepack enable
 corepack pnpm install
-copy .env.example .env
-corepack pnpm dev
 ```
 
-Open `http://localhost:5173`. Vite proxies `/api` requests to `http://localhost:3000`, avoiding a local CORS dependency.
+Create the local environment file:
 
-## Commands
+```bash
+copy .env.example .env
+```
+
+Use `cp .env.example .env` on macOS or Linux. Then start the application:
 
 ```bash
 corepack pnpm dev
-corepack pnpm build
-corepack pnpm typecheck
-corepack pnpm lint
-corepack pnpm test
-corepack pnpm test:coverage
-corepack pnpm test:e2e
 ```
 
-Install the Playwright browser once before the first E2E run:
+Open `http://localhost:5173`. During local development, Vite proxies `/api` to
+`http://localhost:3000`.
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `corepack pnpm dev` | Start the Vite development server |
+| `corepack pnpm build` | Typecheck and create the production build |
+| `corepack pnpm preview` | Preview the production build |
+| `corepack pnpm typecheck` | Validate TypeScript types |
+| `corepack pnpm lint` | Run ESLint |
+| `corepack pnpm test` | Run unit and component tests |
+| `corepack pnpm test:watch` | Run Jest in watch mode |
+| `corepack pnpm test:coverage` | Run Jest with coverage thresholds |
+| `corepack pnpm test:e2e` | Run the Playwright E2E flow |
+
+Install Chromium once before the first E2E run:
 
 ```bash
 corepack pnpm exec playwright install chromium
@@ -49,95 +78,128 @@ corepack pnpm exec playwright install chromium
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `VITE_API_URL` | `/api/v1` | API path used by the browser |
+| `VITE_API_URL` | `/api/v1` | API base path used by the browser |
 | `VITE_API_PROXY_TARGET` | `http://localhost:3000` | Local Vite proxy target |
 
-For a separately hosted production API, set `VITE_API_URL` to its public URL and allow the frontend origin in the API CORS policy.
+For a separately hosted API, set `VITE_API_URL` to its public URL and configure the API to allow
+the frontend origin.
+
+## Routes
+
+| Route | Access | Purpose |
+| --- | --- | --- |
+| `/login` | Public | Authenticate the user |
+| `/` | Authenticated | View the current subscription |
+| `/plans` | Authenticated | Compare plans and complete checkout |
+| `/admin/payment-logs` | Administrator | Search and paginate payment activity |
+
+Unknown routes render the not-found page.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    U[User] --> P[Lazy React pages]
+    U[User] --> P[Lazy-loaded pages]
     P --> C[Presentation components]
     P --> R[Redux Toolkit store]
     R --> S[Subscription repository]
-    S --> H[Retrying HTTP client]
+    S --> H[HTTP client]
     H --> A[Subscription API]
-    A --> B[(PostgreSQL)]
-    A --> Q[Payment outbox worker]
-    Q --> N[External notification]
-    R --> T[Accessible toast region]
+    R --> T[Accessible notifications]
 ```
 
 ### Responsibilities
 
-- `pages/` composes route-level presentation and user workflows.
-- `components/` contains reusable accessible UI.
-- `store/` owns application state and async workflow transitions.
-- `services/subscriptionRepository.ts` expresses backend operations without UI concerns.
-- `services/apiClient.ts` owns authentication headers, timeouts, retries, and error mapping.
-- `lib/sessionStorage.ts` owns tab-scoped JWT session lifecycle.
+- `pages/` composes route-level workflows.
+- `features/` contains domain-specific presentation and lifecycle components.
+- `components/` contains reusable and accessible UI.
+- `store/` owns authentication, subscription, checkout, and notification state.
+- `services/subscriptionRepository.ts` defines the backend operations used by the client.
+- `services/apiClient.ts` owns headers, timeouts, retries, and HTTP error mapping.
+- `lib/sessionStorage.ts` owns the JWT session lifecycle for the current browser tab.
 
-## Backend Contract
+## API Contract
 
-The portal integrates with:
+The client integrates with:
 
 - `POST /api/v1/auth/login`
-- `GET /api/v1/plans`
-- `GET /api/v1/subscriptions`
+- `GET /api/v1/plans?page=1&limit=20`
+- `GET /api/v1/subscriptions?page=1&limit=20`
 - `POST /api/v1/subscriptions/checkout`
+- `GET /api/v1/payments?page={page}&limit={limit}` for administrators
+- `GET /api/v1/subscriptions?page=1&limit=100` for the administrator payment lookup
 
-Protected calls send `Authorization: Bearer <jwt>`. Checkout also sends a unique `Idempotency-Key`, which makes automatic retry safe and protects against duplicate clicks or transient network failures.
+Protected requests send `Authorization: Bearer <jwt>`. Checkout also sends a unique
+`Idempotency-Key` and the body:
 
-### Checkout identity and payment data
+```json
+{
+  "planId": "plan-id",
+  "paymentMethod": "simulated-card"
+}
+```
 
-The checkout visibly covers the assessment's name, email, and payment requirement:
+### Checkout Identity
 
-- Name and email are automatically filled from the authenticated user returned at login.
-- Both identity fields are read-only confirmation data. They are not included in the checkout body because the API derives the purchaser from the signed JWT.
-- The selected simulated payment method is submitted with the plan identifier as `{ planId, paymentMethod }`.
+Name and email are prefilled from the authenticated user and displayed as read-only confirmation
+fields. They are not sent in the checkout body because the API derives the purchaser from the
+signed JWT. This prevents client-supplied identity data from being used to impersonate another
+user.
 
-This avoids trusting client-supplied identity fields that could be modified to impersonate another
-user, while still making the account receiving the subscription clear before payment.
+## Resilience
 
-## Resilience and Edge Cases
+- Network failures and `5xx` responses retry twice with exponential backoff.
+- Requests time out after eight seconds.
+- Validation, authentication, authorization, payment, conflict, timeout, network, and server
+  errors have distinct feedback.
+- A `401` clears the current session and redirects the user to authenticate again.
+- Checkout submission is disabled while the payment is processing.
+- Every checkout request uses an idempotency key to prevent duplicate processing.
+- A successful payment refreshes subscription state and produces an accessible notification.
 
-- Network and 5xx failures retry twice with exponential backoff.
-- Requests time out after eight seconds and produce a specific message.
-- Validation, authentication, timeout, network, and server errors have distinct user feedback.
-- A `401` clears the tab-scoped session and requests a new login; `403` remains an access-denied error.
-- Checkout disables submission while processing.
-- The dashboard keeps a useful fallback message when refresh fails.
-- Payment success produces an immediate accessible notification and refreshes subscription state.
-
-The current backend does not expose WebSocket or SSE events. "Live updates" therefore reflect immediate client-side checkout confirmation. A production real-time channel can feed the same notification slice without changing page components.
+The backend currently exposes no WebSocket or SSE channel. Updates after payment are immediate
+client-side confirmation followed by a subscription refresh.
 
 ## Testing
 
-Jest enforces at least 70% global coverage across session, API, repository, and Redux business logic. The current suite covers successful and failed session handling, HTTP error mapping, auth expiry, idempotent checkout, repository mapping, and Redux transitions.
+Jest collects coverage across the application source and enforces a global minimum of 70% for
+branches, functions, lines, and statements. The suite covers authentication, storage, API error
+mapping, repositories, Redux transitions, routes, pages, reusable components, checkout, and
+rendering behavior.
 
-Playwright mocks only the network boundary and verifies the user-visible flow:
+Playwright mocks only the API boundary and verifies that a user can:
 
 1. Sign in.
-2. Open available plans.
+2. Open the plans page.
 3. Select a plan.
-4. Submit simulated payment.
-5. See payment and activation confirmation.
+4. Confirm the prefilled account details.
+5. Complete a simulated payment.
+6. See activation and payment confirmation.
 
-## Accessibility and Performance
+## CI
+
+The workflow at `.github/workflows/ci.yml` runs on pull requests and pushes to `main`. It uses
+Node.js 22, pnpm 11.6.0, a frozen lockfile, and pnpm caching to execute:
+
+- Unit and component tests
+- ESLint
+- TypeScript typecheck
+
+## Accessibility and Rendering
 
 - Semantic navigation, labels, field errors, dialog roles, and an `aria-live` notification region
-- Visible keyboard focus and Escape-to-close checkout
+- Keyboard focus styles and Escape-to-close checkout behavior
 - Responsive mobile navigation and plan layout
 - Reduced-motion support
 - Route-level code splitting with `React.lazy`
-- Narrow Redux selectors and local form state to limit unrelated renders
+- Narrow Redux selectors to avoid renders caused by unrelated state
+- Memoized plan cards and stable checkout callbacks
+- Memoized filtering for the administrative payment table
 
 ## Production Notes
 
-- Serve the Vite build from a CDN behind TLS.
-- Configure strict frontend-origin CORS on the API when not using a same-origin reverse proxy.
+- Serve the Vite build behind TLS.
+- Configure strict frontend-origin CORS when the API is hosted separately.
 - Prefer an HttpOnly refresh cookie with short-lived access tokens.
-- Send payment events to Kafka or RabbitMQ and deliver real-time updates through SSE/WebSockets.
-- Run typecheck, lint, unit coverage, build, and Playwright in CI before deployment.
+- Add production build and Playwright jobs to CI before deployment.
+- A real-time SSE or WebSocket channel can later feed the existing notification state.
