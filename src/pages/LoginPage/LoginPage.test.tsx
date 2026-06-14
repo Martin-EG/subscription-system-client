@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import LoginPage from '@/pages/LoginPage';
+import LoginPage from '@/pages/LoginPage/LoginPage';
 import { useAppSelector } from '@/store/hooks';
 
 jest.mock('@/store/hooks', () => ({
