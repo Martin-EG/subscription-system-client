@@ -2,7 +2,7 @@
   "name": "subscription-system-client",
   "private": true,
   "version": "0.1.0",
-  "description": "React and TypeScript client for the subscription system",
+  "description": "Premium subscription management portal",
   "type": "module",
   "packageManager": "pnpm@11.6.0",
   "engines": {

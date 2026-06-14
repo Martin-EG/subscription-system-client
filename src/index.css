@@ -1,17 +1,56 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter", "Segoe UI", sans-serif;
+  --font-display: "Manrope", "Segoe UI", sans-serif;
+}
+
 :root {
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-sans);
+  color: #0f172a;
+  background: #f5f7fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: #f5f7fb;
+}
+
 body {
   margin: 0;
+  min-width: 320px;
   min-height: 100vh;
 }
 
-main {
-  padding: 2rem;
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  color: #0f172a;
+  background: #a5f3fc;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
