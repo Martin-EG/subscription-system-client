@@ -1,8 +1,3 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import LoginPage from '@/pages/LoginPage/LoginPage';
-import { useAppSelector } from '@/store/hooks';
-
 jest.mock('@/store/hooks', () => ({
   useAppSelector: jest.fn(),
 }));
@@ -11,6 +6,12 @@ jest.mock('@/features/Login', () => ({
   __esModule: true,
   default: () => <div>Login card</div>,
 }));
+
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { useAppSelector } from '@/store/hooks';
+
+import LoginPage from './LoginPage';
 
 const mockedUseAppSelector = jest.mocked(useAppSelector);
 
